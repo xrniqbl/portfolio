@@ -5,7 +5,6 @@ import {
   Sun, 
   Instagram, 
   Linkedin, 
-  ArrowRight, 
   Menu, 
   X, 
   Lock,
@@ -23,7 +22,8 @@ import {
   Globe,
   AlertTriangle,
   Github,
-  MessageCircle
+  MessageCircle,
+  Mail
 } from 'lucide-react';
 
 // --- Firebase Imports ---
@@ -49,7 +49,8 @@ const SOCIALS = {
   whatsapp: "https://wa.me/6289512114437",
   instagram: "https://www.instagram.com/iqbaalesptr",
   linkedin: "https://www.linkedin.com/in/iqbalsaputra04",
-  github: "https://github.com/xrniqbl"
+  github: "https://github.com/xrniqbl",
+  email: "mailto:iqblsptr04@gmail.com" // Ganti dengan email asli Anda jika ada
 };
 
 // --- FIREBASE CONFIGURATION ---
@@ -374,7 +375,7 @@ const TechStack = ({ isDarkMode }) => {
   const marqueeTools = [...tools, ...tools, ...tools];
 
   return (
-    <div className={`py-12 border-y ${isDarkMode ? 'bg-black/50 border-white/5' : 'bg-white/50 border-black/5'}`}>
+    <div className={`py-12 border-y mt-20 md:mt-0 ${isDarkMode ? 'bg-black/50 border-white/5' : 'bg-white/50 border-black/5'}`}>
         <div className="overflow-hidden flex relative">
             <div className={`absolute left-0 top-0 bottom-0 w-24 z-10 bg-gradient-to-r ${isDarkMode ? 'from-[#050505] to-transparent' : 'from-[#FAFAFA] to-transparent'}`}></div>
             <div className={`absolute right-0 top-0 bottom-0 w-24 z-10 bg-gradient-to-l ${isDarkMode ? 'from-[#050505] to-transparent' : 'from-[#FAFAFA] to-transparent'}`}></div>
@@ -642,8 +643,8 @@ const App = () => {
               ) : (
                  <a href={SOCIALS.whatsapp} target="_blank" rel="noopener noreferrer" className={`group px-6 py-2.5 text-[11px] font-bold uppercase tracking-widest rounded-full transition-all duration-300 flex items-center gap-2 ${
                     isDarkMode 
-                    ? 'bg-white text-black hover:bg-purple-50' 
-                    : 'bg-black text-white hover:bg-zinc-800'
+                    ? 'bg-white text-black hover:bg-purple-50 hover:px-8' 
+                    : 'bg-black text-white hover:bg-zinc-800 hover:px-8'
                 }`}>
                     Hubungi Saya <ChevronRight size={14} className="opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all" />
                 </a>
@@ -797,8 +798,8 @@ const App = () => {
               transition={{ duration: 1.2, delay: 0.2 }}
               className="order-1 lg:order-2 w-full h-[60vh] md:h-[60vh] lg:h-screen relative flex items-center justify-center overflow-hidden"
           >
-              {/* Removed "FUTURE" text and adjusted robot positioning */}
-              <div className="w-[250%] h-[250%] md:w-[180%] md:h-[180%] lg:w-[160%] lg:h-[160%] flex items-center justify-center pointer-events-auto">
+              {/* Reduced size specifically for mobile (w-[160%] h-[160%]), kept larger desktop sizes */}
+              <div className="w-[160%] h-[160%] md:w-[180%] md:h-[180%] lg:w-[160%] lg:h-[160%] flex items-center justify-center pointer-events-auto">
                 <spline-viewer 
                   url="https://prod.spline.design/3tDaTajD3LVYWYz3/scene.splinecode"
                   class="w-full h-full"
@@ -1060,13 +1061,21 @@ const App = () => {
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">yang luar biasa.</span>
               </h2>
               
-              <div className="relative z-10 flex flex-col sm:flex-row justify-center items-center gap-6 mt-12">
-                   <a href={SOCIALS.whatsapp} target="_blank" rel="noopener noreferrer" className={`px-10 py-5 rounded-full text-xs font-bold uppercase tracking-widest transition-all hover:scale-105 shadow-2xl flex items-center gap-2 ${
-                      isDarkMode ? 'bg-white text-black hover:bg-zinc-200' : 'bg-black text-white hover:bg-zinc-800'
-                   }`}>
-                      <MessageCircle size={18} /> Hubungi via WhatsApp
-                   </a>
-                   <div className="flex gap-4">
+              <div className="relative z-10 flex flex-col items-center gap-6 mt-12">
+                   <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                        <a href={SOCIALS.whatsapp} target="_blank" rel="noopener noreferrer" className={`px-10 py-5 rounded-full text-xs font-bold uppercase tracking-widest transition-all hover:scale-105 shadow-2xl flex items-center justify-center gap-2 ${
+                            isDarkMode ? 'bg-white text-black hover:bg-zinc-200' : 'bg-black text-white hover:bg-zinc-800'
+                        }`}>
+                            <MessageCircle size={18} /> Hubungi via WhatsApp
+                        </a>
+                        <a href={SOCIALS.email} className={`px-10 py-5 rounded-full text-xs font-bold uppercase tracking-widest transition-all hover:scale-105 border flex items-center justify-center gap-2 ${
+                            isDarkMode ? 'border-white/20 hover:bg-white/10 text-white' : 'border-black/20 hover:bg-black/5 text-black'
+                        }`}>
+                            <Mail size={18} /> Kirim Email
+                        </a>
+                   </div>
+                   
+                   <div className="flex gap-4 mt-4">
                       <a href={SOCIALS.instagram} target="_blank" rel="noreferrer" className={`p-4 rounded-full transition-all hover:scale-110 ${isDarkMode ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-zinc-100 hover:bg-zinc-200 text-black'}`}>
                           <Instagram size={24} />
                       </a>
