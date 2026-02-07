@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Moon, 
@@ -22,7 +22,8 @@ import {
   Code,
   Globe,
   AlertTriangle,
-  Github
+  Github,
+  MessageCircle
 } from 'lucide-react';
 
 // --- Firebase Imports ---
@@ -42,6 +43,33 @@ import {
   onAuthStateChanged,
   signInWithCustomToken
 } from "firebase/auth";
+
+// --- SOCIAL LINKS CONFIGURATION ---
+const SOCIALS = {
+  whatsapp: "https://wa.me/6289512114437",
+  instagram: "https://www.instagram.com/iqbaalesptr",
+  linkedin: "https://www.linkedin.com/in/iqbalsaputra04",
+  github: "https://github.com/xrniqbl"
+};
+
+// --- FIREBASE CONFIGURATION ---
+const firebaseConfig = {
+  apiKey: "AIzaSyD-tCESftBthOG1yx859Pv859hH7lYrL2o",
+  authDomain: "portfolio-98c63.firebaseapp.com",
+  projectId: "portfolio-98c63",
+  storageBucket: "portfolio-98c63.firebasestorage.app",
+  messagingSenderId: "891375724208",
+  appId: "1:891375724208:web:00c16db20a7123c0ba3d75",
+  measurementId: "G-Y1BVEDFJSM"
+};
+
+// --- Initialize Firebase Global ---
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ID Aplikasi statis untuk penyimpanan data
+const APP_ID_KEY = 'portfolio-iqbal-v1'; 
 
 // --- Utility: Resize Image ---
 const resizeImage = (file) => {
@@ -339,17 +367,15 @@ const TechStack = ({ isDarkMode }) => {
     { name: "PHP", icon: TechIcons.PHP },
     { name: "Gemini AI", icon: TechIcons.Gemini },
     { name: "ChatGPT", icon: TechIcons.ChatGPT },
-    { name: "GitHub", icon: Github },
+    { name: "GitHub", icon: Github }, 
     { name: "Claude AI", icon: TechIcons.Claude },
   ];
 
-  // Duplicate for seamless loop
   const marqueeTools = [...tools, ...tools, ...tools];
 
   return (
     <div className={`py-12 border-y ${isDarkMode ? 'bg-black/50 border-white/5' : 'bg-white/50 border-black/5'}`}>
         <div className="overflow-hidden flex relative">
-            {/* Gradient Masks */}
             <div className={`absolute left-0 top-0 bottom-0 w-24 z-10 bg-gradient-to-r ${isDarkMode ? 'from-[#050505] to-transparent' : 'from-[#FAFAFA] to-transparent'}`}></div>
             <div className={`absolute right-0 top-0 bottom-0 w-24 z-10 bg-gradient-to-l ${isDarkMode ? 'from-[#050505] to-transparent' : 'from-[#FAFAFA] to-transparent'}`}></div>
 
@@ -376,24 +402,20 @@ const TechStack = ({ isDarkMode }) => {
 // --- Main App Component ---
 
 const App = () => {
-  // --- State ---
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
-  // Modals
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(null); 
   const [selectedProject, setSelectedProject] = useState(null); 
   
-  // Admin & Data State
   const [isAdmin, setIsAdmin] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
   const [projects, setProjects] = useState([]);
   const [user, setUser] = useState(null);
   
-  // CRUD Form State
   const [isEditing, setIsEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -405,20 +427,10 @@ const App = () => {
     gallery: []
   });
 
-  // --- Firebase Initialization ---
   useEffect(() => {
-    const firebaseConfig = JSON.parse(__firebase_config);
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
     const initAuth = async () => {
       try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
           await signInAnonymously(auth);
-        }
       } catch (error) {
         console.error("Auth failed", error);
       }
@@ -432,17 +444,12 @@ const App = () => {
     return () => unsubscribeAuth();
   }, []);
 
-  // Data Fetching
   useEffect(() => {
     if (!user) return;
     
-    const app = initializeApp(JSON.parse(__firebase_config));
-    const db = getFirestore(app);
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
-    const q = collection(db, 'artifacts', appId, 'public', 'data', 'projects');
+    const collectionRef = collection(db, 'artifacts', APP_ID_KEY, 'public', 'data', 'projects');
     
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribe = onSnapshot(collectionRef, (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       setProjects(items);
@@ -453,17 +460,14 @@ const App = () => {
     return () => unsubscribe();
   }, [user]);
 
-  // --- Theme Toggle ---
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
-  // --- Scroll Listener ---
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // --- Spline Script ---
   useEffect(() => {
     if (!document.querySelector('script[src*="spline-viewer"]')) {
       const script = document.createElement('script');
@@ -473,7 +477,6 @@ const App = () => {
     }
   }, []);
 
-  // --- Image Handlers ---
   const handleIconUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -509,7 +512,6 @@ const App = () => {
     }));
   };
 
-  // --- Admin Functions ---
   const handleLogin = (e) => {
     e.preventDefault();
     if (passwordInput === "admin123") { 
@@ -523,21 +525,18 @@ const App = () => {
 
   const handleLogout = () => {
     setIsAdmin(false);
-    setMobileMenuOpen(false); // Close menu if open
+    setMobileMenuOpen(false); 
   };
 
   const handleSaveProject = async (e) => {
     e.preventDefault();
     if (!user) return;
 
-    const app = initializeApp(JSON.parse(__firebase_config));
-    const db = getFirestore(app);
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    const collectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'projects');
+    const collectionRef = collection(db, 'artifacts', APP_ID_KEY, 'public', 'data', 'projects');
 
     try {
       if (isEditing) {
-        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'projects', isEditing);
+        const docRef = doc(db, 'artifacts', APP_ID_KEY, 'public', 'data', 'projects', isEditing);
         await updateDoc(docRef, { ...formData });
       } else {
         await addDoc(collectionRef, {
@@ -558,12 +557,8 @@ const App = () => {
     if (!showDeleteModal) return;
     if (!user) return;
 
-    const app = initializeApp(JSON.parse(__firebase_config));
-    const db = getFirestore(app);
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    
     try {
-      await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', showDeleteModal));
+      await deleteDoc(doc(db, 'artifacts', APP_ID_KEY, 'public', 'data', 'projects', showDeleteModal));
       setShowDeleteModal(null);
     } catch (error) {
       console.error("Error deleting:", error);
@@ -645,10 +640,10 @@ const App = () => {
                   <span className="hidden md:inline">KELUAR ADMIN</span> <LogOut size={16} />
                 </button>
               ) : (
-                 <a href="#contact" className={`group px-6 py-2.5 text-[11px] font-bold uppercase tracking-widest rounded-full transition-all duration-300 flex items-center gap-2 ${
+                 <a href={SOCIALS.whatsapp} target="_blank" rel="noopener noreferrer" className={`group px-6 py-2.5 text-[11px] font-bold uppercase tracking-widest rounded-full transition-all duration-300 flex items-center gap-2 ${
                     isDarkMode 
-                    ? 'bg-white text-black hover:bg-purple-50 hover:px-8' 
-                    : 'bg-black text-white hover:bg-zinc-800 hover:px-8'
+                    ? 'bg-white text-black hover:bg-purple-50' 
+                    : 'bg-black text-white hover:bg-zinc-800'
                 }`}>
                     Hubungi Saya <ChevronRight size={14} className="opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all" />
                 </a>
@@ -717,8 +712,9 @@ const App = () => {
                     &copy; 2026 Iqbal
                 </div>
                 <div className="flex gap-4">
-                    <Instagram size={20} className={isDarkMode ? 'text-white' : 'text-black'}/>
-                    <Linkedin size={20} className={isDarkMode ? 'text-white' : 'text-black'}/>
+                    <a href={SOCIALS.instagram} target="_blank" rel="noreferrer"><Instagram size={24} className={isDarkMode ? 'text-white' : 'text-black'}/></a>
+                    <a href={SOCIALS.linkedin} target="_blank" rel="noreferrer"><Linkedin size={24} className={isDarkMode ? 'text-white' : 'text-black'}/></a>
+                    <a href={SOCIALS.github} target="_blank" rel="noreferrer"><Github size={24} className={isDarkMode ? 'text-white' : 'text-black'}/></a>
                 </div>
               </div>
             </motion.div>
@@ -728,23 +724,18 @@ const App = () => {
 
       {/* --- HERO SECTION --- */}
       <section id="home" className="relative min-h-screen flex items-center overflow-hidden">
-        
-        {/* Ambient Glow Background */}
         <div className={`absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none`}>
           <div className={`absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full blur-[150px] opacity-30 animate-pulse ${isDarkMode ? 'bg-purple-900/40' : 'bg-purple-200/60'}`}></div>
           <div className={`absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[150px] opacity-30 animate-pulse delay-1000 ${isDarkMode ? 'bg-blue-900/40' : 'bg-blue-200/60'}`}></div>
         </div>
 
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 w-full grid grid-cols-1 lg:grid-cols-2 items-center relative z-10 pt-20 lg:pt-0">
-          
-          {/* Left Content */}
           <motion.div 
             variants={staggerContainer}
             initial="hidden"
             animate="visible"
             className="order-2 lg:order-1 flex flex-col items-start lg:pr-12 mt-12 lg:mt-0 relative z-20"
           >
-            {/* Badge */}
             <motion.div variants={fadeInUp} className="mb-8">
               <div className={`inline-flex items-center gap-3 px-4 py-2 rounded-full border backdrop-blur-md ${
                   isDarkMode 
@@ -800,26 +791,20 @@ const App = () => {
             </motion.div>
           </motion.div>
 
-          {/* Right Content - 3D Object with FIXED SCALE (Restored Extreme Zoom) */}
           <motion.div 
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 1.2, delay: 0.2 }}
               className="order-1 lg:order-2 w-full h-[60vh] md:h-[60vh] lg:h-screen relative flex items-center justify-center overflow-hidden"
           >
-              {/* Scaled massively to hide watermark and focus on robot */}
+              {/* Removed "FUTURE" text and adjusted robot positioning */}
               <div className="w-[250%] h-[250%] md:w-[180%] md:h-[180%] lg:w-[160%] lg:h-[160%] flex items-center justify-center pointer-events-auto">
                 <spline-viewer 
                   url="https://prod.spline.design/3tDaTajD3LVYWYz3/scene.splinecode"
                   class="w-full h-full"
                 />
               </div>
-              
-              <div className={`hidden lg:block absolute top-1/2 right-0 text-[6rem] xl:text-[8rem] font-black opacity-[0.03] pointer-events-none select-none -translate-y-1/2 ${isDarkMode ? 'text-white' : 'text-black'}`}>
-                  FUTURE
-              </div>
           </motion.div>
-
         </div>
       </section>
 
@@ -957,7 +942,7 @@ const App = () => {
         isDarkMode={isDarkMode} 
       />
 
-      {/* --- PROJECT DETAIL MODAL (NEW) --- */}
+      {/* --- PROJECT DETAIL MODAL --- */}
       <ProjectDetailModal
         project={selectedProject}
         isOpen={!!selectedProject}
@@ -965,7 +950,7 @@ const App = () => {
         isDarkMode={isDarkMode}
       />
 
-      {/* --- DELETE CONFIRM MODAL (NEW) --- */}
+      {/* --- DELETE CONFIRM MODAL --- */}
       <DeleteConfirmModal
         isOpen={!!showDeleteModal}
         onClose={() => setShowDeleteModal(null)}
@@ -1060,6 +1045,43 @@ const App = () => {
         )}
       </AnimatePresence>
 
+      {/* --- CONTACT SECTION --- */}
+      <section id="contact" className={`py-32 ${isDarkMode ? 'bg-[#050505]' : 'bg-[#FAFAFA]'} border-t ${isDarkMode ? 'border-white/5' : 'border-black/5'}`}>
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+          <div className={`relative rounded-[3rem] overflow-hidden p-12 md:p-24 text-center ${
+              isDarkMode 
+              ? 'bg-gradient-to-b from-purple-900/10 to-transparent border border-white/5' 
+              : 'bg-white shadow-2xl shadow-purple-500/5 border border-purple-100'
+          }`}>
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-full bg-purple-500/10 blur-[100px] pointer-events-none"></div>
+
+              <h2 className={`relative z-10 text-4xl md:text-7xl font-black tracking-tight mb-8 ${isDarkMode ? 'text-white' : 'text-zinc-900'}`}>
+                Mari ciptakan sesuatu <br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">yang luar biasa.</span>
+              </h2>
+              
+              <div className="relative z-10 flex flex-col sm:flex-row justify-center items-center gap-6 mt-12">
+                   <a href={SOCIALS.whatsapp} target="_blank" rel="noopener noreferrer" className={`px-10 py-5 rounded-full text-xs font-bold uppercase tracking-widest transition-all hover:scale-105 shadow-2xl flex items-center gap-2 ${
+                      isDarkMode ? 'bg-white text-black hover:bg-zinc-200' : 'bg-black text-white hover:bg-zinc-800'
+                   }`}>
+                      <MessageCircle size={18} /> Hubungi via WhatsApp
+                   </a>
+                   <div className="flex gap-4">
+                      <a href={SOCIALS.instagram} target="_blank" rel="noreferrer" className={`p-4 rounded-full transition-all hover:scale-110 ${isDarkMode ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-zinc-100 hover:bg-zinc-200 text-black'}`}>
+                          <Instagram size={24} />
+                      </a>
+                      <a href={SOCIALS.linkedin} target="_blank" rel="noreferrer" className={`p-4 rounded-full transition-all hover:scale-110 ${isDarkMode ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-zinc-100 hover:bg-zinc-200 text-black'}`}>
+                          <Linkedin size={24} />
+                      </a>
+                      <a href={SOCIALS.github} target="_blank" rel="noreferrer" className={`p-4 rounded-full transition-all hover:scale-110 ${isDarkMode ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-zinc-100 hover:bg-zinc-200 text-black'}`}>
+                          <Github size={24} />
+                      </a>
+                   </div>
+              </div>
+          </div>
+        </div>
+      </section>
+
       {/* --- FOOTER & ADMIN LOGIN TRIGGER --- */}
       <footer className={`py-12 text-center border-t ${isDarkMode ? 'bg-[#050505] border-white/5 text-zinc-600' : 'bg-[#FAFAFA] border-black/5 text-zinc-400'}`}>
         <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-[10px] font-bold uppercase tracking-widest">
@@ -1072,9 +1094,9 @@ const App = () => {
             </div>
           </div>
           <div className="flex gap-8 mt-4 md:mt-0">
-            <a href="#" className="hover:text-purple-500 transition-colors">Twitter</a>
-            <a href="#" className="hover:text-purple-500 transition-colors">GitHub</a>
-            <a href="#" className="hover:text-purple-500 transition-colors">Discord</a>
+            <a href={SOCIALS.instagram} target="_blank" rel="noreferrer" className="hover:text-purple-500 transition-colors"><Instagram size={18} /></a>
+            <a href={SOCIALS.linkedin} target="_blank" rel="noreferrer" className="hover:text-purple-500 transition-colors"><Linkedin size={18} /></a>
+            <a href={SOCIALS.github} target="_blank" rel="noreferrer" className="hover:text-purple-500 transition-colors"><Github size={18} /></a>
           </div>
         </div>
       </footer>
